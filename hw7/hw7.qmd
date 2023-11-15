@@ -1,6 +1,6 @@
 ---
 title: Homework 7 - Creating a resume database
-author: (your name goes here!)
+author: Benjamin Baldwin
 date: last-modified
 format:
     html:
@@ -14,7 +14,7 @@ format:
 
 (Please clean up any comments that I included.  This is a scaffold document.)
 
-GITHUB URL:  <your URL goes here!>
+GITHUB URL:  <https://github.com/cmsc-vcu/cmsc508-fa2023-hw7-BaldwinBR>
 
 ```{python}
 #| eval: true
@@ -203,6 +203,37 @@ df
 
 
 ### List skill names of Person 1
+
+```{python}
+sql = f"""
+SELECT
+    last_name,
+    name
+FROM
+    peopleskills a 
+    INNER JOIN people b on (a.people_id=b.id)
+    INNER JOIN skills c on (a.skills_id=c.id)
+WHERE
+    last_name = 'Person 1'
+ORDER BY
+    name,
+    last_name;
+"""
+```
+
+```{python}
+#| echo: false
+#| eval: true
+try:
+    df = pd.read_sql(sql,cnx)
+    df
+except Exception as e:
+    message = str(e)
+    print(f"An error occurred:\n\n{message}\n\nIgnoring and moving on.")
+    df = pd.DataFrame()
+df
+
+```
 
 
 ### List people names with Skill 6
