@@ -233,33 +233,3 @@ insert into peopleroles (people_id, role_id, date_assigned) values
     (10,1,'2014-05-26');
 
 
-
-SELECT
-   first_name,
-   last_name,
-   e.name
-FROM
-    peopleroles a 
-    LEFT JOIN peopleskills b on (a.people_id=b.people_id)
-    LEFT JOIN people c on (a.people_id = c.id)
-    LEFT JOIN skills d on (b.skills_id = d.id)
-    LEFT JOIN roles e on (a.role_id = e.id)
-WHERE
-    e.id = 5
-
-
-
-SELECT DISTINCT
-   first_name,
-   last_name,
-   e.name
-FROM
-    peopleroles a 
-    INNER JOIN people c on (a.people_id = c.id)
-    INNER JOIN roles e on (a.role_id = e.id)
-    INNER JOIN peopleskills b on (a.people_id=b.people_id)
-    INNER JOIN skills d on (b.skills_id = d.id)
-    
-WHERE
-    e.id = 5
-
