@@ -10,9 +10,10 @@ format:
         code-copy: true
 ---
 
-(include a brief description of what is in this document)
+Description: 
+This document contains a write up on Homework 7 for CMSC 508. 
+See Overiew and Description section for more details
 
-(Please clean up any comments that I included.  This is a scaffold document.)
 
 GITHUB URL:  <https://github.com/cmsc-vcu/cmsc508-fa2023-hw7-BaldwinBR>
 
@@ -92,34 +93,78 @@ except Exception as e:
 
 ## Overview and description
 
-(briefly describe the project and the database)
+This project created a database from scratch for an imaginary company.
+
+It's purpose is to create a company-wide resume, capturing the collective skills and certifications of the employees
+
+The Database consisted of tables: People, Roles, Skills, PeopleSkills, PeopleRoles
 
 ## Crows-foot diagram
 
-(add a description of the diagram and what the reader is seeing.)
+People and Skills contain a many-to-many relationship that is resolved by the table peopleskills
+
+People and Roles contain a many-to-many relationship that is resolved by the table peopleroles
 
 ```{mermaid}
 %%| echo: false
 erDiagram
-    CUSTOMER ||--o{ ORDER : places
-    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
-    CUSTOMER{
-        int id
+
+    skills ||--o{ peopleskills: have
+    peopleskills }o--|| people : have
+
+    roles ||--o{ peopleroles: have
+    peopleroles }o--|| people: have
+    
+    
+    skills{
+        int id PK
+        string name
+        string description
+        string tag
+        string url
+        int time_commitment
+    }
+
+    people{
+        int id PK
         string first_name
         string last_name
+        string email
+        string linkedin_url
+        string headshot_url
+        string discord_handle
+        string brief_bio
+        date date_joined
     }
-    DELIVERY-ADDRESS {
-        int id
+
+    peopleskills{
+        int id PK
+        int skills_id FK
+        int people_id FK
+        date date_acquired
+    }
+
+    roles{
+        int id PK
+        string name
+        int sort_priority
+    }
+
+    peopleroles{
+        int id PK
+        int people_id FK
+        int role_id FK
+        date date_assigned
     }
 ```
 
 ## Examples of data in the database
 
-For the people, skills, and roles tables, provide a description of each table and it's contents. Then provide a listing of the entire table.
-
 ### People table
 
-The *people* table contains elements that describe ... 
+The *people* table contains elements that describe the employees of our fictional company
+
+The people have information contained in the table about their id, first name, last name, email, LinkedIn url, headshot url, discord handle, a brief bio, and the date they joined the organization.
 
 Below is a list of data in the *people* table.
 
@@ -142,47 +187,72 @@ df
 
 ### Skills table
 
-The *skills* table contains elements that describe ... 
+The *skills* table contains elements that describe the skills the employees may hold 
+
+The skills table includes the information id, description, tag, a helpful url, and the time commitment of learning.
 
 Below is a list of data in the *skills* table.
 
 ```{python}
 #| echo: false
 #| eval: true
-
+sql = f"""
+select * from skills;
+"""
 ## Add code to list roles table here
+try:
+    df = pd.read_sql(sql,cnx)
+    df
+except Exception as e:
+    message = str(e)
+    print(f"An error occurred:\n\n{message}\n\nIgnoring and moving on.")
+    df = pd.DataFrame()
+df
 ```
 
 ### Roles table
 
-The *roles* table contains elements that describe ... 
+The *roles* table contains elements that describe the roles an employee can have
+
+The roles table includes the information id, name of role, and the sorting priority of that role
 
 Below is a list of data in the *roles* table.
 
 ```{python}
 #| echo: false
 #| eval: true
-
+sql = f"""
+select * from roles;
+"""
 ## Add code to list roles table here
+try:
+    df = pd.read_sql(sql,cnx)
+    df
+except Exception as e:
+    message = str(e)
+    print(f"An error occurred:\n\n{message}\n\nIgnoring and moving on.")
+    df = pd.DataFrame()
+df
 ```
 
 
 ## Sample queries
 
-Let's explore the database!
 
 # List skill names, tags, and descriptions ordered by name
 
-(here a sample query)
-
 ```{python}
 sql = f"""
-select * from people
+SELECT
+    name,
+    tag,
+    description
+FROM
+    skills
+ORDER BY
+    name;
 """
 ```
-
-
-(and here is a sample result from the query)
 
 ```{python}
 #| echo: false
@@ -237,24 +307,198 @@ df
 
 
 ### List people names with Skill 6
+```{python}
+sql = f"""
+SELECT
+    first_name,
+    last_name,
+    tag
+FROM
+    peopleskills a 
+    INNER JOIN people b on (a.people_id=b.id)
+    INNER JOIN skills c on (a.skills_id=c.id)
+WHERE
+    tag = 'Skill 6'
+ORDER BY
+    name,
+    last_name;
+"""
+```
+
+```{python}
+#| echo: false
+#| eval: true
+try:
+    df = pd.read_sql(sql,cnx)
+    df
+except Exception as e:
+    message = str(e)
+    print(f"An error occurred:\n\n{message}\n\nIgnoring and moving on.")
+    df = pd.DataFrame()
+df
+
+```
 
 
 ### List people with a DEVELOPER role
 
+```{python}
+sql = f"""
+SELECT
+    first_name,
+    last_name,
+    name
+FROM
+    peopleroles a 
+    INNER JOIN people b on (a.people_id=b.id)
+    INNER JOIN roles c on (a.role_id=c.id)
+WHERE
+    name = 'Developer'
+ORDER BY
+    name,
+    last_name;
+"""
+```
+
+```{python}
+#| echo: false
+#| eval: true
+try:
+    df = pd.read_sql(sql,cnx)
+    df
+except Exception as e:
+    message = str(e)
+    print(f"An error occurred:\n\n{message}\n\nIgnoring and moving on.")
+    df = pd.DataFrame()
+df
+
+```
 
 ### List names and email addresses of people without skills
 
+```{python}
+sql = f"""
+SELECT
+    skills_id,
+    first_name,
+    last_name,
+    email
+FROM
+    people a
+    LEFT JOIN peopleskills b ON a.id = b.people_id
+WHERE 
+    skills_id IS NULL
+"""
+```
+
+```{python}
+#| echo: false
+#| eval: true
+try:
+    df = pd.read_sql(sql,cnx)
+    df
+except Exception as e:
+    message = str(e)
+    print(f"An error occurred:\n\n{message}\n\nIgnoring and moving on.")
+    df = pd.DataFrame()
+df
+
+```
 
 ### List names and tags of unused skills
 
+```{python}
+sql = f"""
+SELECT
+    name,
+    tag
+FROM
+    skills a
+    LEFT JOIN peopleskills b ON a.id = b.skills_id
+WHERE 
+    people_id IS NULL
+"""
+```
+
+```{python}
+#| echo: false
+#| eval: true
+try:
+    df = pd.read_sql(sql,cnx)
+    df
+except Exception as e:
+    message = str(e)
+    print(f"An error occurred:\n\n{message}\n\nIgnoring and moving on.")
+    df = pd.DataFrame()
+df
+
+```
 
 ### List people names and skill names with the BOSS role
 
+```{python}
+sql = f"""
+SELECT DISTINCT
+   first_name,
+   last_name,
+   e.name
+FROM
+    peopleroles a 
+    INNER JOIN people c on (a.people_id = c.id)
+    INNER JOIN roles e on (a.role_id = e.id)
+    INNER JOIN peopleskills b on (a.people_id=b.people_id)
+    INNER JOIN skills d on (b.skills_id = d.id)
+    
+WHERE
+    e.id = 5
+"""
+```
+
+```{python}
+#| echo: false
+#| eval: true
+try:
+    df = pd.read_sql(sql,cnx)
+    df
+except Exception as e:
+    message = str(e)
+    print(f"An error occurred:\n\n{message}\n\nIgnoring and moving on.")
+    df = pd.DataFrame()
+df
+
+```
 
 ### List ids and names of unused roles
 
+```{python}
+sql = f"""
+SELECT
+    a.id,
+    name
+FROM
+    roles a
+    LEFT JOIN peopleroles b ON a.id = b.role_id
+WHERE 
+    people_id IS NULL
+"""
+```
+
+```{python}
+#| echo: false
+#| eval: true
+try:
+    df = pd.read_sql(sql,cnx)
+    df
+except Exception as e:
+    message = str(e)
+    print(f"An error occurred:\n\n{message}\n\nIgnoring and moving on.")
+    df = pd.DataFrame()
+df
+
+```
 
 ## Reflection
 
-(Write a paragraph expressing your thoughts, feelings, and insights about your experience with this assignment.  Pause and breath before writing - I'm trying to encourage critical thinking and self-awareness while allowing you to explore the connections between theory and practice. And yes, delete this paragraph.)
+My experience with this assignment was generally good. It was almost fun to build a database from the ground up and really connect all those wires
+together in real time. I would probably consider this my favorite homework of the semester so far. The main issues I had coming out of this project is, and continue to be, time. Everything just takes more time than I think it will. Whether it be plugging records into a table or crafting a SQL statement to perfectly encapsulate the desired outcome. I know that with more practice though I will become quicker with all these things and that will factor less into projects going forward. 
 

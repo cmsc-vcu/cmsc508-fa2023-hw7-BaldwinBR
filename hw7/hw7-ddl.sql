@@ -110,8 +110,8 @@ create table peopleskills(
     people_id int NOT NULL,
     date_acquired date default (current_date) NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (skills_id) references skills (id),
-    FOREIGN KEY (people_id) references people (id),
+    FOREIGN KEY (skills_id) references skills (id) ON DELETE CASCADE,
+    FOREIGN KEY (people_id) references people (id) ON DELETE CASCADE,
     UNIQUE (skills_id, people_id)
 );
 
@@ -177,7 +177,7 @@ create table roles (
 # Designer, Developer, Recruit, Team Lead, Boss, Mentor
 # Sort priority is assigned numerically in the order listed above (Designer=10, Developer=20, Recruit=30, etc.)
 
-insert into roles (roles_id, roles_name, roles_sort_priority) values
+insert into roles (id, name, sort_priority) values
     (1, 'Designer',10),
     (2, 'Developer',20),
     (3, 'Recruit',30),
@@ -195,8 +195,8 @@ create table peopleroles(
     role_id int NOT NULL,
     date_assigned date default (current_date) NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (people_id) references people (id),
-    FOREIGN Key (role_id) references roles (id),
+    FOREIGN KEY (people_id) references people (id) ON DELETE CASCADE,
+    FOREIGN Key (role_id) references roles (id) ON DELETE CASCADE,
     UNIQUE (people_id, role_id)
 );
 
@@ -231,3 +231,35 @@ insert into peopleroles (people_id, role_id, date_assigned) values
     (9,2,'2013-01-12'),
     (10,2,'2022-06-15'),
     (10,1,'2014-05-26');
+
+
+
+SELECT
+   first_name,
+   last_name,
+   e.name
+FROM
+    peopleroles a 
+    LEFT JOIN peopleskills b on (a.people_id=b.people_id)
+    LEFT JOIN people c on (a.people_id = c.id)
+    LEFT JOIN skills d on (b.skills_id = d.id)
+    LEFT JOIN roles e on (a.role_id = e.id)
+WHERE
+    e.id = 5
+
+
+
+SELECT DISTINCT
+   first_name,
+   last_name,
+   e.name
+FROM
+    peopleroles a 
+    INNER JOIN people c on (a.people_id = c.id)
+    INNER JOIN roles e on (a.role_id = e.id)
+    INNER JOIN peopleskills b on (a.people_id=b.people_id)
+    INNER JOIN skills d on (b.skills_id = d.id)
+    
+WHERE
+    e.id = 5
+
